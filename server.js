@@ -51,6 +51,7 @@ routes.post('/login', function (req, res) {
                  var token = jwt.sign(user, app.get('superSecret'), {
                      //expiresInMinutes: 1440 // expires in 24 hours
                  });
+
              }
 
             res.json({
@@ -62,6 +63,46 @@ routes.post('/login', function (req, res) {
         }
     })
 });
+
+routes.post('/register', function(req, res){
+    var email = req.body.email;
+    var password = req.body.password;
+    var phone = req.body.phone;
+
+    // Validation
+    req.checkBody('email', 'Email is required').notEmpty();
+    req.checkBody('email', 'Email is not valid').isEmail();
+    req.checkBody('password', 'Password is required').notEmpty();
+    req.checkBody('phone', 'Phone Number is required').notEmpty();
+
+    //req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+
+    var errors = req.validationErrors();
+
+    if(errors){
+        res.render('register',{
+            errors:errors
+        });
+    } else {
+        var newUser = new User({
+            email:email,
+            password: password,
+            phone: phone
+        });
+
+        User.createUser(newUser, function(err, user){
+            if(err) throw err;
+            console.log(user);
+        });
+
+       // req.flash('success_msg', 'You are registered and can now login');
+        req.json({
+            success: true,
+            message: 'You are registered and can now login'
+        });at
+    }
+});
+
 
 routes.use(function(req, res, next){
  var token = req.body.token || req.query.token || req.headers['x-access-token'];
